@@ -169,6 +169,26 @@ export function WaitlistForm({
       return;
     }
 
+    void fetch("/api/waitlist/welcome-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        fullName: formData.fullName,
+      }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Failed to send RentProof welcome email", errorText);
+        }
+      })
+      .catch((welcomeEmailError) => {
+        console.error("Failed to send RentProof welcome email", welcomeEmailError);
+      });
+
     setIsSubmitted(true);
     setFormData(initialState);
     toast.success("You're on the waitlist.");

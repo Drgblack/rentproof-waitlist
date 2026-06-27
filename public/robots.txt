@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# AI crawlers - allow indexing for GEO/AEO purposes
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+Sitemap: https://www.realtyclose.com/sitemap.xml
