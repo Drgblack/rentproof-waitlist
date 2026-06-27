@@ -193,6 +193,12 @@ export default function Home() {
               </article>
             ))}
           </div>
+          <p className="mt-8 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
+            PRS Database registration begins regionally from late 2026.
+            Landlords who have their records organised before rollout hits their
+            area will complete registration in minutes. Those who don&apos;t will
+            scramble.
+          </p>
         </div>
       </section>
 
@@ -213,22 +219,6 @@ export default function Home() {
               want a more reliable record before a Section 8 issue or PRS
               Database deadline lands.
             </p>
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
-              <div className="flex items-start gap-3">
-                <Scale
-                  className="mt-0.5 h-5 w-5 flex-none text-slate-700"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p className="text-sm font-semibold text-slate-950">
-                    Important legal point
-                  </p>
-                  <p className="mt-2 text-sm leading-7 text-slate-700">
-                    {disclaimer}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_70px_-36px_rgba(15,23,42,0.45)] sm:p-8">
@@ -239,19 +229,6 @@ export default function Home() {
 
       <footer className="border-t border-slate-200 bg-slate-950">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 py-8 sm:px-8 lg:px-12">
-          <div className="rounded-2xl border border-slate-200/20 bg-slate-50 px-5 py-5">
-            <div className="flex items-start gap-3">
-              <Scale className="mt-0.5 h-4 w-4 flex-none text-slate-800" />
-              <div>
-                <p className="text-sm font-semibold text-slate-950">
-                  Important legal point
-                </p>
-                <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {disclaimer}
-                </p>
-              </div>
-            </div>
-          </div>
           <p className="text-sm text-slate-400">England only</p>
         </div>
       </footer>

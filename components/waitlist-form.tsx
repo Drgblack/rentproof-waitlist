@@ -4,116 +4,184 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { CheckCircle2, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { supabase } from "@/lib/supabase";
 
-type WaitlistFormProps = {
-  disclaimer: string;
-  onSubmit?: (payload: WaitlistSubmission) => Promise<void> | void;
-};
-
-export type WaitlistSubmission = {
+type FormState = {
   fullName: string;
   email: string;
   portfolioSize: string;
-  englandOnly: boolean;
+  managesEngland: boolean;
   biggestWorry: string;
+  toolsUsed: string[];
+  toolsUsedOther: string;
+  evidencePackTime: string;
+  mostValuableFeatures: string[];
+  possessionExperience: string;
+  designPartnerOpenness: string;
 };
 
-type FormState = WaitlistSubmission;
+type WaitlistFormProps = {
+  disclaimer?: string;
+};
 
 const initialState: FormState = {
   fullName: "",
   email: "",
   portfolioSize: "",
-  englandOnly: false,
+  managesEngland: false,
   biggestWorry: "",
+  toolsUsed: [],
+  toolsUsedOther: "",
+  evidencePackTime: "",
+  mostValuableFeatures: [],
+  possessionExperience: "",
+  designPartnerOpenness: "",
 };
 
-async function submitWaitlist(payload: WaitlistSubmission) {
-  console.log("RentProof waitlist submission", payload);
-}
+const toolsUsedOptions = [
+  "Excel or Google Sheets",
+  "Calendar reminders",
+  "Property management software (e.g. Arthur Online, Goodlord)",
+  "My letting agent handles it",
+  "I don't have a consistent system",
+  "Other",
+] as const;
+
+const evidencePackTimeOptions = [
+  "Under 1 hour — my records are in good shape",
+  "About half a day",
+  "A full day or more",
+  "I honestly don't know",
+] as const;
+
+const mostValuableFeatureOptions = [
+  "Dated Evidence Readiness Snapshot for possession cases",
+  "Organised arrears history for Ground 8 cases",
+  "PRS Database preparation pack",
+  "Certificate expiry tracking and reminders",
+] as const;
+
+const possessionExperienceOptions = [
+  "Yes — resolved",
+  "Yes — ongoing",
+  "Not yet but I'm concerned about it",
+  "No",
+] as const;
+
+const designPartnerOptions = [
+  "Yes — happy to",
+  "Maybe — depends on what's involved",
+  "No",
+] as const;
+
+const defaultDisclaimer =
+  "RentProof is an evidence organisation and deadline tracking tool only. It does not provide legal advice and does not guarantee any outcome in court or with the PRS Database. Always seek qualified legal advice before taking possession action.";
 
 export function WaitlistForm({
-  disclaimer,
-  onSubmit = submitWaitlist,
+  disclaimer = defaultDisclaimer,
 }: WaitlistFormProps) {
   const [formData, setFormData] = useState<FormState>(initialState);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleChange<
-    T extends HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
-  >(event: ChangeEvent<T>) {
-    const { name, value } = event.target;
-    const nextValue =
-      event.target instanceof HTMLInputElement &&
-      event.target.type === "checkbox"
-        ? event.target.checked
+  function handleChange(
+    event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) {
+    const { name, value, type } = event.target;
+    const newValue =
+      type === "checkbox"
+        ? (event.target as HTMLInputElement).checked
         : value;
 
-    setFormData((current) => ({
-      ...current,
-      [name]: nextValue,
-    }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: newValue };
+
+      if (name === "managesEngland" && !newValue) {
+        return {
+          ...next,
+          toolsUsed: [],
+          toolsUsedOther: "",
+          evidencePackTime: "",
+          mostValuableFeatures: [],
+          possessionExperience: "",
+          designPartnerOpenness: "",
+        };
+      }
+
+      return next;
+    });
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleMultiSelectChange(
+    field: "toolsUsed" | "mostValuableFeatures",
+    option: string,
+    checked: boolean,
+  ) {
+    setFormData((prev) => {
+      const nextValues = checked
+        ? [...prev[field], option]
+        : prev[field].filter((item) => item !== option);
+
+      if (field === "toolsUsed" && option === "Other" && !checked) {
+        return {
+          ...prev,
+          toolsUsed: nextValues,
+          toolsUsedOther: "",
+        };
+      }
+
+      return {
+        ...prev,
+        [field]: nextValues,
+      };
+    });
+  }
+
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
 
-    if (!formData.englandOnly) {
-      toast.error("Please confirm that you manage properties in England.");
+    if (!formData.managesEngland) {
+      toast.error("Please confirm you manage properties in England.");
       return;
     }
 
     setIsSubmitting(true);
 
-    try {
-      await onSubmit(formData);
-      setIsSubmitted(true);
-      setFormData(initialState);
-      toast.success("You are on the waitlist.");
-    } catch (error) {
-      console.error(error);
+    const { error } = await supabase.from("waitlist_submissions").insert({
+      full_name: formData.fullName,
+      email: formData.email,
+      portfolio_size: formData.portfolioSize,
+      manages_england: formData.managesEngland,
+      biggest_worry: formData.biggestWorry || null,
+      tools_used: formData.toolsUsed,
+      tools_used_other: formData.toolsUsedOther || null,
+      evidence_pack_time: formData.evidencePackTime || null,
+      most_valuable_features: formData.mostValuableFeatures,
+      possession_experience: formData.possessionExperience || null,
+      design_partner_openness: formData.designPartnerOpenness || null,
+    });
+
+    setIsSubmitting(false);
+
+    if (error) {
       toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      console.error(error);
+      return;
     }
+
+    setIsSubmitted(true);
+    setFormData(initialState);
+    toast.success("You're on the waitlist.");
   }
 
   if (isSubmitted) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm">
-          <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
-        </div>
-        <h3 className="mt-5 text-2xl font-semibold text-slate-950">
-          Thank you
-        </h3>
-        <p className="mt-3 text-base leading-8 text-slate-700">
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center">
+        <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-emerald-600" />
+        <h3 className="text-2xl font-semibold text-slate-950">Thank you</h3>
+        <p className="mt-2 text-slate-700">
           We’ll email you when early access opens.
         </p>
-        <button
-          type="button"
-          onClick={() => setIsSubmitted(false)}
-          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-800 transition hover:border-slate-400 hover:bg-white"
-        >
-          Submit another response
-        </button>
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="flex items-start gap-3">
-            <ShieldCheck
-              className="mt-0.5 h-4 w-4 flex-none text-slate-700"
-              aria-hidden="true"
-            />
-            <div>
-              <p className="text-sm font-semibold text-slate-950">
-                Important legal point
-              </p>
-              <p className="mt-2 text-sm leading-7 text-slate-700">
-                {disclaimer}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -127,10 +195,6 @@ export function WaitlistForm({
         <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
           Keep your records ahead of the pressure.
         </h3>
-        <p className="mt-3 text-sm leading-7 text-slate-600">
-          Tell us about your portfolio and what is causing the most concern
-          right now.
-        </p>
       </div>
 
       <label className="block">
@@ -141,10 +205,9 @@ export function WaitlistForm({
           required
           name="fullName"
           type="text"
-          autoComplete="name"
           value={formData.fullName}
           onChange={handleChange}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-slate-300 px-4 py-3"
           placeholder="Your name"
         />
       </label>
@@ -157,10 +220,9 @@ export function WaitlistForm({
           required
           name="email"
           type="email"
-          autoComplete="email"
           value={formData.email}
           onChange={handleChange}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-slate-300 px-4 py-3"
           placeholder="name@example.com"
         />
       </label>
@@ -174,32 +236,204 @@ export function WaitlistForm({
           name="portfolioSize"
           value={formData.portfolioSize}
           onChange={handleChange}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-slate-300 px-4 py-3"
         >
           <option value="" disabled>
             Select portfolio size
           </option>
-          <option value="1–4">1–4</option>
-          <option value="5–10">5–10</option>
-          <option value="11–20">11–20</option>
-          <option value="21–50">21–50</option>
-          <option value="50+">50+</option>
+          <option value="1–4">1–4 properties</option>
+          <option value="5–10">5–10 properties</option>
+          <option value="11–20">11–20 properties</option>
+          <option value="21–50">21–50 properties</option>
+          <option value="50+">50+ properties</option>
         </select>
       </label>
 
       <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
         <input
           required
-          name="englandOnly"
+          name="managesEngland"
           type="checkbox"
-          checked={formData.englandOnly}
+          checked={formData.managesEngland}
           onChange={handleChange}
-          className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+          className="mt-1 h-4 w-4"
         />
         <span className="text-sm leading-7 text-slate-700">
           I manage properties in England
         </span>
       </label>
+
+      <div
+        className={`overflow-hidden transition-all duration-200 ease-out ${
+          formData.managesEngland
+            ? "max-h-[2800px] opacity-100"
+            : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="space-y-5 pt-1">
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium text-slate-800">
+              What tools or methods do you currently use to track certificates
+              and compliance?
+            </legend>
+            <div className="space-y-3">
+              {toolsUsedOptions.map((option) => (
+                <label
+                  key={option}
+                  className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.toolsUsed.includes(option)}
+                    onChange={(event) =>
+                      handleMultiSelectChange(
+                        "toolsUsed",
+                        option,
+                        event.target.checked,
+                      )
+                    }
+                    className="mt-1 h-4 w-4"
+                  />
+                  <span className="text-sm leading-7 text-slate-700">
+                    {option}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div
+              className={`overflow-hidden transition-all duration-200 ease-out ${
+                formData.toolsUsed.includes("Other")
+                  ? "max-h-24 opacity-100"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              <label className="block pt-2">
+                <input
+                  name="toolsUsedOther"
+                  type="text"
+                  value={formData.toolsUsedOther}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3"
+                  placeholder="Please specify"
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium text-slate-800">
+              If you needed to serve a Section 8 possession notice tomorrow, how
+              long would it take you to pull together a complete evidence pack?
+            </legend>
+            <div className="space-y-3">
+              {evidencePackTimeOptions.map((option) => (
+                <label
+                  key={option}
+                  className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
+                >
+                  <input
+                    type="radio"
+                    name="evidencePackTime"
+                    value={option}
+                    checked={formData.evidencePackTime === option}
+                    onChange={handleChange}
+                    className="mt-1 h-4 w-4"
+                  />
+                  <span className="text-sm leading-7 text-slate-700">
+                    {option}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium text-slate-800">
+              Which of these would be most valuable to you? Select all that
+              apply.
+            </legend>
+            <div className="space-y-3">
+              {mostValuableFeatureOptions.map((option) => (
+                <label
+                  key={option}
+                  className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.mostValuableFeatures.includes(option)}
+                    onChange={(event) =>
+                      handleMultiSelectChange(
+                        "mostValuableFeatures",
+                        option,
+                        event.target.checked,
+                      )
+                    }
+                    className="mt-1 h-4 w-4"
+                  />
+                  <span className="text-sm leading-7 text-slate-700">
+                    {option}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium text-slate-800">
+              Have you ever dealt with a possession situation, attempted to
+              serve notice, or had a tenant stop paying rent?
+            </legend>
+            <div className="space-y-3">
+              {possessionExperienceOptions.map((option) => (
+                <label
+                  key={option}
+                  className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
+                >
+                  <input
+                    type="radio"
+                    name="possessionExperience"
+                    value={option}
+                    checked={formData.possessionExperience === option}
+                    onChange={handleChange}
+                    className="mt-1 h-4 w-4"
+                  />
+                  <span className="text-sm leading-7 text-slate-700">
+                    {option}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium text-slate-800">
+              Would you be open to a 20-minute call and/or sharing anonymised
+              documents (a certificate or rent schedule) to help shape this
+              tool?
+            </legend>
+            <div className="space-y-3">
+              {designPartnerOptions.map((option) => (
+                <label
+                  key={option}
+                  className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
+                >
+                  <input
+                    type="radio"
+                    name="designPartnerOpenness"
+                    value={option}
+                    checked={formData.designPartnerOpenness === option}
+                    onChange={handleChange}
+                    className="mt-1 h-4 w-4"
+                  />
+                  <span className="text-sm leading-7 text-slate-700">
+                    {option}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </div>
+      </div>
 
       <label className="block">
         <span className="mb-2 block text-sm font-medium text-slate-800">
@@ -210,18 +444,15 @@ export function WaitlistForm({
           name="biggestWorry"
           value={formData.biggestWorry}
           onChange={handleChange}
-          rows={5}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-          placeholder="Optional, but helpful."
+          rows={4}
+          className="w-full rounded-xl border border-slate-300 px-4 py-3"
+          placeholder="Optional but helpful"
         />
       </label>
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
         <div className="flex items-start gap-3">
-          <ShieldCheck
-            className="mt-0.5 h-4 w-4 flex-none text-slate-700"
-            aria-hidden="true"
-          />
+          <ShieldCheck className="mt-0.5 h-4 w-4 flex-none text-slate-700" />
           <div>
             <p className="text-sm font-semibold text-slate-950">
               Important legal point
@@ -236,7 +467,7 @@ export function WaitlistForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-slate-950 px-6 py-3 text-base font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950"
+        className="w-full rounded-md bg-slate-950 py-3 font-medium text-white hover:bg-slate-800 disabled:bg-slate-700"
       >
         {isSubmitting ? "Joining..." : "Join the waitlist"}
       </button>
