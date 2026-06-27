@@ -7,6 +7,7 @@ import {
   FolderClock,
   Scale,
 } from "lucide-react";
+import { RentProofLogo } from "@/components/rentproof-logo";
 import { WaitlistForm } from "@/components/waitlist-form";
 
 const problemPoints = [
@@ -68,6 +69,7 @@ export default function Home() {
         <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,rgba(236,242,238,0.16))]" />
         <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-6 py-20 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:px-12 lg:py-28">
           <div className="max-w-3xl">
+            <RentProofLogo tone="light" className="mb-8" />
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-sm text-slate-300">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               England-only for self-managing landlords
@@ -229,6 +231,7 @@ export default function Home() {
 
       <footer className="border-t border-slate-200 bg-slate-950">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 py-8 sm:px-8 lg:px-12">
+          <RentProofLogo tone="light" showTagline={false} />
           <p className="text-sm text-slate-400">England only</p>
         </div>
       </footer>
