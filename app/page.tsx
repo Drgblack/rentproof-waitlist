@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   AlertTriangle,
   BadgeCheck,
@@ -179,6 +182,8 @@ const structuredData = {
 };
 
 export default function Home() {
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
   return (
     <main className="flex-1">
       <script
@@ -356,34 +361,6 @@ export default function Home() {
       </section>
 
       <section
-        id="faq"
-        className="border-b border-slate-200 bg-slate-950 text-slate-100"
-      >
-        <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:px-8 lg:px-12 lg:py-20">
-          <div className="max-w-3xl">
-            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Common questions
-            </h2>
-          </div>
-          <div className="mt-10 space-y-4">
-            {faqItems.map((item) => (
-              <article
-                key={item.question}
-                className="rounded-2xl border border-white/10 bg-white/6 p-6 backdrop-blur-sm"
-              >
-                <h3 className="text-lg font-semibold text-white">
-                  {item.question}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-slate-300">
-                  {item.answer}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section
         id="waitlist"
         className="mx-auto w-full max-w-6xl px-6 py-16 sm:px-8 lg:px-12 lg:py-20"
       >
@@ -404,6 +381,75 @@ export default function Home() {
 
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_70px_-36px_rgba(15,23,42,0.45)] sm:p-8">
             <WaitlistForm disclaimer={disclaimer} />
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="faq"
+        className="border-b border-slate-200 bg-slate-950 text-slate-100"
+      >
+        <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:px-8 lg:px-12 lg:py-20">
+          <div className="max-w-3xl">
+            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              Common questions
+            </h2>
+          </div>
+          <div className="mt-10 space-y-4">
+            {faqItems.map((item, index) => {
+              const isOpen = openFaqIndex === index;
+
+              return (
+                <article
+                  key={item.question}
+                  className="rounded-2xl border border-white/10 bg-white/6 p-6 backdrop-blur-sm"
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenFaqIndex((current) =>
+                        current === index ? null : index,
+                      )
+                    }
+                    className="flex w-full items-center justify-between gap-4 text-left"
+                    aria-expanded={isOpen}
+                  >
+                    <h3 className="text-lg font-semibold text-white">
+                      {item.question}
+                    </h3>
+                    <svg
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                      className={`h-5 w-5 flex-none text-slate-300 transition-transform duration-200 ${
+                        isOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                      fill="none"
+                    >
+                      <path
+                        d="M5 7.5L10 12.5L15 7.5"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <div
+                    className={`grid overflow-hidden transition-all duration-200 ease-out ${
+                      isOpen
+                        ? "mt-3 grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <p className="text-sm leading-7 text-slate-300">
+                        {item.answer}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
