@@ -227,8 +227,12 @@ export default function Home() {
               England-only for self-managing landlords
             </div>
             <h1 className="mt-6 max-w-4xl text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Get your compliance records ready before the next crisis — or
-              before PRS registration hits your area.
+              Get your compliance records ready before the next crisis -{" "}
+              <span className="text-emerald-200">or before </span>
+              <span className="bg-[linear-gradient(90deg,#f87171_0%,#f59e0b_22%,#fde047_44%,#34d399_66%,#60a5fa_84%,#c084fc_100%)] bg-clip-text text-transparent">
+                PRS registration
+              </span>
+              <span className="text-emerald-200"> hits your area.</span>
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl">
               RentProof helps self-managing landlords in England organise
