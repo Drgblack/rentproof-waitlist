@@ -71,6 +71,23 @@ export default function Home() {
           <div className="max-w-3xl">
             <RentProofLogo tone="light" className="mb-8" />
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-sm text-slate-300">
+              <span
+                className="flex h-4 w-6 overflow-hidden rounded-[3px] ring-1 ring-white/20"
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 60 30" className="h-full w-full">
+                  <clipPath id="union-jack-clip">
+                    <rect width="60" height="30" rx="2" ry="2" />
+                  </clipPath>
+                  <g clipPath="url(#union-jack-clip)">
+                    <rect width="60" height="30" fill="#012169" />
+                    <path d="M0 0L60 30M60 0L0 30" stroke="#FFF" strokeWidth="6" />
+                    <path d="M0 0L60 30M60 0L0 30" stroke="#C8102E" strokeWidth="3" />
+                    <path d="M30 0V30M0 15H60" stroke="#FFF" strokeWidth="10" />
+                    <path d="M30 0V30M0 15H60" stroke="#C8102E" strokeWidth="6" />
+                  </g>
+                </svg>
+              </span>
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               England-only for self-managing landlords
             </div>
