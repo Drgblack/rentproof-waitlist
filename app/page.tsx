@@ -17,19 +17,19 @@ const problemPoints = [
   {
     title: "The missing record usually appears too late",
     description:
-      "A certificate, notice date, or arrears note can look fine until a Section 8 claim depends on it.",
+      "A certificate, notice date, or arrears note can look fine until a Section 8 claim depends on it. By then it is too late to fix the gap.",
     icon: AlertTriangle,
   },
   {
     title: "Scattered evidence weakens possession work",
     description:
-      "If the file is spread across inboxes, folders, and messages, the chronology is harder to defend under pressure.",
+      "If a tenant raises a disrepair defence at a Section 8 hearing, a timestamped maintenance log is the only thing that rebuts it. Most landlords do not have one.",
     icon: Scale,
   },
   {
     title: "PRS Database rollout adds another deadline",
     description:
-      "The register is expected to roll out by area from late 2026, which means more records need to be orderly before your area goes live.",
+      "The register is expected to roll out by area from late 2026. Landlords who have their records organised before rollout reaches their area will complete registration in minutes. Those who do not will scramble.",
     icon: CalendarClock,
   },
 ] as const;
@@ -38,7 +38,7 @@ const benefitCards = [
   {
     title: "Evidence Readiness Snapshot",
     description:
-      "A dated view showing exactly what is on file, what is missing, and what needs attention before you need to act.",
+      "A dated view showing exactly what is on file, what is missing, and what needs attention before you need to act — including maintenance logs that rebut disrepair defences in court.",
     icon: FileCheck2,
   },
   {
@@ -52,6 +52,24 @@ const benefitCards = [
     description:
       "Maintain a clear arrears history, supporting notes, and payment chronology to help you prepare for Ground 8 cases.",
     icon: BadgeCheck,
+  },
+] as const;
+
+const landlordQuotes = [
+  {
+    quote:
+      "My spreadsheet process is running out of steam — it lacks the kind of audit trail a dedicated software solution would provide.",
+    attribution: "Self-managing landlord, 10-unit portfolio",
+  },
+  {
+    quote:
+      "Wondering if I'm overcomplicating this or if others are finding it genuinely difficult to evidence under the new rules.",
+    attribution: "England landlord, post-Section 21 reform",
+  },
+  {
+    quote:
+      "Any procedural weakness on your side becomes a target for cross examination.",
+    attribution: "Experienced landlord, Section 8 court hearing",
   },
 ] as const;
 
@@ -237,7 +255,8 @@ export default function Home() {
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl">
               RentProof helps self-managing landlords in England organise
               certificates, evidence, and arrears records so possession claims
-              are defensible and PRS Database registration is straightforward.
+              are defensible, your records survive scrutiny, and PRS Database
+              registration is straightforward.
             </p>
             <p className="mt-3 text-sm text-slate-400">
               England only · Possession evidence and PRS Database preparation ·
@@ -355,11 +374,36 @@ export default function Home() {
               </article>
             ))}
           </div>
+          <section className="mt-10 overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(125,168,143,0.14),_transparent_34%),linear-gradient(180deg,_rgba(10,18,32,0.98),_rgba(10,18,32,1))]">
+            <div className="px-6 py-10 sm:px-8 lg:px-10">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-slate-300">
+                What Landlords Are Saying
+              </p>
+              <div className="mt-6 grid gap-5 lg:grid-cols-3">
+                {landlordQuotes.map(({ quote, attribution }) => (
+                  <article
+                    key={quote}
+                    className="rounded-2xl border border-white/10 bg-white/6 p-6 shadow-[0_20px_50px_-34px_rgba(2,6,23,0.85)] backdrop-blur-sm"
+                  >
+                    <p className="text-base leading-8 text-slate-100">
+                      &ldquo;{quote}&rdquo;
+                    </p>
+                    <p className="mt-4 text-sm text-slate-400">{attribution}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
           <p className="mt-8 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
             PRS Database registration begins regionally from late 2026.
             Landlords who have their records organised before rollout hits their
             area will complete registration in minutes. Those who don&apos;t will
             scramble.
+          </p>
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
+            Think of RentProof as the MOT certificate for your compliance
+            record — proof that everything was in order, on the date it
+            mattered.
           </p>
         </div>
       </section>
@@ -378,8 +422,10 @@ export default function Home() {
             </h2>
             <p className="mt-4 text-base leading-8 text-slate-700">
               Early access is aimed at landlords in England who self-manage and
-              want a more reliable record before a Section 8 issue or PRS
-              Database deadline lands.
+              are done running their portfolio on spreadsheets that lack a
+              proper audit trail. If a Section 8 hearing, a council inspection,
+              or PRS Database registration is approaching, this is where to
+              start.
             </p>
           </div>
 
